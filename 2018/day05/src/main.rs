@@ -14,7 +14,7 @@ fn clean(mut chars: Vec<char>) -> String {
 
     let mut made_change = false;
     loop {
-        if j >= chars.len() {
+        if j == chars.len() {
             // we've hit the end of the vec, start again. If we've made it this far and haven't
             // made a change since the last time we reset the flag to false, then no more changes
             // are needed.
@@ -34,10 +34,11 @@ fn clean(mut chars: Vec<char>) -> String {
             chars.remove(i);
             chars.remove(i);
             made_change = true;
+            continue;
+        } else {
+            i += 1;
+            j += 1;
         }
-
-        i += 1;
-        j += 1;
     }
     chars.into_iter().collect()
 }
