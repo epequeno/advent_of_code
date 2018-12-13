@@ -1,7 +1,5 @@
-use std::collections::HashSet;
 use std::fs::File;
 use std::io::prelude::*;
-use std::iter::FromIterator;
 
 fn will_react(a: char, b: char) -> bool {
     let a_lower = a.to_lowercase().to_string();
@@ -33,16 +31,15 @@ fn clean(mut chars: Vec<char>) -> String {
         let b = chars[j];
 
         if will_react(a, b) {
+            chars.remove(i);
+            chars.remove(i);
             made_change = true;
-            chars.remove(i);
-            chars.remove(i);
         }
 
         i += 1;
         j += 1;
     }
-    let ans: String = chars.into_iter().collect();
-    format!("{}", ans)
+    chars.into_iter().collect()
 }
 
 fn part_one() {
@@ -60,6 +57,7 @@ fn part_two() {
     f.read_to_string(&mut data).unwrap();
     let chars: Vec<char> = data.chars().collect();
     let alphabet: Vec<char> = "abcdefghijklmnopqrstuvwxyz".chars().collect();
+
     for letter in alphabet {
         let upper = letter.to_ascii_uppercase();
         let test: String = chars.clone().into_iter().collect();
@@ -70,6 +68,6 @@ fn part_two() {
 }
 
 fn main() {
-    // part_one();
+    part_one();
     part_two();
 }
