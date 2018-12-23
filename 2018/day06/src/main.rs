@@ -50,6 +50,26 @@ fn distance(p1: Point, p2: Point) -> i32 {
     (p1.x - p2.x).abs() + (p1.y - p2.y).abs()
 }
 
+fn mark_cell(p: Point, points: &Vec<Point>) -> String {
+    let mut min = 10000;
+    let mut ans = String::new();
+    for point in points {
+        let distance = distance(p, *point);
+        let repr = format!("({},{})", point.x, point.y);
+        if distance == 0 {
+            return repr;
+        }
+
+        if distance < min {
+            min = distance;
+            ans = repr;
+        } else if distance == min {
+            return ".".to_string();
+        }
+    }
+    ans
+}
+
 fn part_one() {
     let f = File::open("input.txt").unwrap();
     let f = BufReader::new(f);
@@ -60,45 +80,86 @@ fn part_one() {
     }
 
     // get original set of bounds
-    let (lower_bound, _upper_bound) = find_bounds(&points);
+    let (lower_bound, _) = find_bounds(&points);
 
-    // shift the points to orient around orgin rather than in the middle of the 1st quadrant
-    for mut point in &mut points {
-        point.x = point.x - lower_bound.x;
-        point.y = point.y - lower_bound.y;
-    }
+    // TODO: the following "shifting" may correctly identify the bounded points but might also be
+    // throwing off the count later on.
+
+    // shift points to start at 0 instead of somewhere in the middle of the 1st quadrant.
+    // this allows for a more direct model when mapping between points and array indices
+    let shifted = points
+        .iter()
+        .map(|p| {
+            let x = p.x - lower_bound.x;
+            let y = p.y - lower_bound.y;
+            Point { x, y }
+        })
+        .collect();
 
     // get new set of bounds
-    let (_lower_bound, upper_bound) = find_bounds(&points);
+    let (_, upper_bound) = find_bounds(&shifted);
 
-    let mut board = vec![vec![0_i64; upper_bound.x as usize]; upper_bound.y as usize];
-    for y in 0..upper_bound.y {
-        for x in 0..upper_bound.x {
-            let current_point = Point { x, y };
-            let current_value = board[y as usize][x as usize];
-            'inner: for point in &points {
-                let distance = distance(current_point, *point);
+    let mut board =
+        vec![vec![String::new(); (upper_bound.y + 1) as usize]; (upper_bound.x + 1) as usize];
 
-                // our current spot on the board is one of the points, mark it
-                if distance == 0 {
-                    board[y as usize][x as usize] = -2;
-                    continue 'inner;
-                }
+    // fill out the board.
+    for x in 0..board.len() {
+        for y in 0..board[x].len() {
+            let p = Point {
+                x: x as i32,
+                y: y as i32,
+            };
+            board[x][y] = mark_cell(p, &shifted);
+        }
+    }
 
-                // these values have special significance and if seen should not be changed.
-                if current_value == -1 || current_value == -2 {
-                    continue 'inner;
-                }
+    // begin to filter out infinite points
+    let mut bounded: Vec<Point> = Vec::new();
 
-                if current_value == distance.into() {
-                    board[y as usize][x as usize] = -1;
-                } else if (current_value == 0) || (current_value > distance.into()) {
-                    board[y as usize][x as usize] = distance.into();
+    'outer: for point in shifted {
+        let repr = format!("({},{})", point.x, point.y);
+        // points at the edge of the graph are by definition infinite
+        if point.x == 0 || point.y == 0 || point.x == upper_bound.x || point.y == upper_bound.y {
+            continue;
+        }
+        let min_x = &board[0][point.y as usize];
+        let max_x = &board.last().unwrap()[point.y as usize];
+
+        let min_y = &board[point.x as usize][0];
+        let max_y = &board[point.x as usize].last().unwrap();
+
+        // if we look at the edges of the board and find that our Point has been marked there, then
+        // we have no interruptions bewtween the Point and the edge, so the Point is infinite.
+        let bounds = vec![min_x, max_x, min_y, max_y];
+        for bound in bounds {
+            if repr == *bound {
+                continue 'outer;
+            }
+        }
+        bounded.push(point);
+    }
+
+    let mut biggest_size = 0;
+
+    for point in bounded {
+        let repr = format!("({},{})", point.x, point.y);
+        let mut counter = 1;
+        for x in &board {
+            for y in x {
+                if *y == repr {
+                    counter += 1;
                 }
             }
         }
+
+        println!("{} {}", repr, counter);
+
+        if counter > biggest_size {
+            biggest_size = counter;
+        }
     }
     println!("{:?}", board);
+    println!("{}", biggest_size);
 }
 
 fn main() {
