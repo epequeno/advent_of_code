@@ -30,7 +30,7 @@ fn calculate_additional_fuel(n: &f64) -> f64 {
 
 fn main() {
     let examples: Vec<f64> = vec![12., 14., 1969., 100756.];
-    let _res: f64 = examples.iter().map(|x| rounder(x)).sum();
+    let _res: f64 = examples.iter().map(|n| rounder(n)).sum();
 
     let data = read_input();
 
