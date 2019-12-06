@@ -1,21 +1,20 @@
 // https://adventofcode.com/2019/day/3
-use std::fs::File;
-use std::io::prelude::*;
-use std::io::BufReader;
+// optimization ideas from:
+//   https://old.reddit.com/r/adventofcode/comments/e5bz2w/2019_day_3_solutions/f9iz68s/
+use std::collections::{HashMap, HashSet};
+use std::fs::read_to_string;
 
 fn read_input() -> Vec<Vec<String>> {
-    let f = File::open("input.txt").unwrap();
-    let f = BufReader::new(f);
+    let input = read_to_string("input.txt").unwrap();
     let mut res = Vec::new();
-    for line in f.lines() {
-        let line = line.unwrap();
+    for line in input.lines() {
         let instructions: Vec<String> = line.split(',').map(|s| s.to_owned()).collect();
         res.push(instructions);
     }
     res
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(PartialEq, Eq, Hash, Debug, Copy, Clone)]
 struct Point {
     x: isize,
     y: isize,
@@ -25,9 +24,10 @@ fn distance(p1: Point, p2: Point) -> isize {
     (p2.x - p1.x).abs() + (p2.y - p1.y).abs()
 }
 
-fn trace_path(wire: &Vec<String>) -> Vec<Point> {
+fn trace_path(wire: &Vec<String>) -> HashMap<Point, isize> {
     let mut cursor = Point { x: 0, y: 0 };
-    let mut res = Vec::new();
+    let mut res = HashMap::new();
+    let mut step_counter = 0;
 
     for movement in wire {
         let direction = movement.chars().next().unwrap();
@@ -52,79 +52,49 @@ fn trace_path(wire: &Vec<String>) -> Vec<Point> {
                 }
             }
 
-            res.push(cursor.clone());
+            // keep track of how many steps it took us to get to this point
+            // only record the first time we've visited the point
+            step_counter += 1;
+            if !res.contains_key(&cursor) {
+                res.insert(cursor.clone(), step_counter);
+            }
         }
     }
     res
-}
-
-fn are_equal(p1: &Point, p2: &Point) -> bool {
-    p1.x == p2.x && p1.y == p2.y
 }
 
 fn main() {
     let input_data = read_input();
     let wire_one = &input_data[0];
     let wire_two = &input_data[1];
+
     let path_one = trace_path(wire_one);
     let path_two = trace_path(wire_two);
 
-    let mut crosses = Vec::new();
-    for p1 in &path_one {
-        for p2 in &path_two {
-            if are_equal(p1, p2) {
-                crosses.push(p1.clone());
-            }
-        }
+    let mut path_one_points = HashSet::new();
+    let mut path_two_points = HashSet::new();
+
+    for point in path_one.keys() {
+        path_one_points.insert(point);
+    }
+
+    for point in path_two.keys() {
+        path_two_points.insert(point);
     }
 
     let origin = Point { x: 0, y: 0 };
-    let mut min_distance = distance(origin, crosses[0]);
+    let crosses: Vec<Point> = path_one_points
+        .intersection(&path_two_points)
+        .map(|p| p.to_owned())
+        .map(|p| p.to_owned())
+        .collect();
+    let res = crosses.iter().map(|p| distance(origin, *p)).min().unwrap();
+    println!("part one = {}", res);
 
-    for point in &crosses {
-        let d = distance(origin, *point);
-        if d <= min_distance {
-            min_distance = d;
-        };
-    }
-
-    println!("part one = {}", min_distance);
-
-    let mut min_steps = 0;
-    let target_cross = crosses[0];
-    for point in &path_one {
-        min_steps += 1;
-        if are_equal(point, &target_cross) {
-            break;
-        }
-    }
-
-    for point in &path_two {
-        min_steps += 1;
-        if are_equal(point, &target_cross) {
-            break;
-        }
-    }
-
-    for cross in &crosses {
-        let mut total_steps = 0;
-        for point in &path_one {
-            total_steps += 1;
-            if are_equal(point, &cross) {
-                break;
-            }
-        }
-        for point in &path_two {
-            total_steps += 1;
-            if are_equal(point, &cross) {
-                break;
-            }
-        }
-
-        if total_steps <= min_steps {
-            min_steps = total_steps;
-        }
-    }
-
-    println!("part two = {}", min_steps);
+    let res = crosses
+        .iter()
+        .map(|p| path_one[p] + path_two[p])
+        .min()
+        .unwrap();
+    println!("part two = {}", res);
 }

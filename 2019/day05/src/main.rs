@@ -1,20 +1,21 @@
 // https://adventofcode.com/2019/day/5
-use std::fs::File;
-use std::io::prelude::*;
-use std::io::BufReader;
+use std::fs::read_to_string;
 
-fn read_input() -> Vec<isize> {
-    let f = File::open("input.txt").unwrap();
-    let f = BufReader::new(f);
+fn read_input() -> Vec<String> {
+    let input = read_to_string("input.txt").unwrap();
     let mut res = Vec::new();
-    for line in f.lines() {
-        let line = line.unwrap();
-        let nums: Vec<&str> = line.split(',').collect();
-        for i in nums.iter() {
-            res.push(i.parse::<isize>().unwrap());
+    for line in input.lines() {
+        let ops: Vec<String> = line.split(',').map(|s| s.to_owned()).collect();
+        for op in ops.iter() {
+            res.push(op.to_owned());
         }
     }
     res
+}
+
+enum ParameterMode {
+    Position,
+    Immediate,
 }
 
 fn intcode_computer(mut data: Vec<usize>, noun: usize, verb: usize) -> usize {
@@ -40,6 +41,8 @@ fn intcode_computer(mut data: Vec<usize>, noun: usize, verb: usize) -> usize {
             2 => {
                 data[opcode[3]] = data[opcode[1]] * data[opcode[2]];
             }
+            3 => {}
+            4 => {}
             _ => {}
         }
     }
