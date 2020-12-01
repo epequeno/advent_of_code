@@ -1,5 +1,6 @@
 // https://adventofcode.com/2019/day/6
-use std::collections::HashMap;
+use petgraph::Graph;
+use std::collections::HashSet;
 use std::fs::read_to_string;
 
 fn read_input() -> Vec<String> {
@@ -13,13 +14,20 @@ fn read_input() -> Vec<String> {
 
 fn main() {
     let input = read_input();
-    let mut model = HashMap::new();
-    for orbit in input {
+    let mut deps = Graph::<String, String>::new();
+    let mut nodes = HashSet::new();
+    for orbit in input.clone() {
         let pair: Vec<String> = orbit.split(')').map(|s| s.to_owned()).collect();
-        let key = pair[0].clone();
-        let orbiter = pair[1].clone();
-        let counter = model.entry(key).or_insert(0);
-        *counter += 1;
+        nodes.insert(pair[0].clone());
+        nodes.insert(pair[1].clone());
     }
-    println!("{:?}", model.values().sum::<usize>());
+
+    for node in nodes {
+        deps.add_node(node);
+    }
+
+
+    for orbit in input {
+        let edge = 
+    }
 }
