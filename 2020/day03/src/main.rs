@@ -46,7 +46,7 @@ struct Position {
     y: usize,
 }
 
-fn part_one(board: &Board, movement: Movement) -> usize {
+fn part_one(board: &Board, movement: &Movement) -> usize {
     let width = board.field[0].len();
     let height = board.field.len();
     let mut position = Position { x: 0, y: 0 };
@@ -82,7 +82,7 @@ fn main() {
 
     // part 1
     let movement = Movement { right: 3, down: 1 };
-    let part_one_result = part_one(&board, movement);
+    let part_one_result = part_one(&board, &movement);
     println!("part one: {}", part_one_result);
 
     // part 2
@@ -93,6 +93,6 @@ fn main() {
         Movement { right: 7, down: 1 },
         Movement { right: 1, down: 2 },
     ];
-    let part_two_result: usize = movements.iter().map(|m| part_one(&board, *m)).product();
+    let part_two_result: usize = movements.iter().map(|m| part_one(&board, m)).product();
     println!("part two: {}", part_two_result);
 }
