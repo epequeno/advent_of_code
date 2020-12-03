@@ -64,7 +64,7 @@ fn part_one(board: &Board, movement: &Movement) -> usize {
 
         // if we're beyond the width of the board remove the width amount to "loop" back around.
         if next_step.x >= width {
-            next_step.x = next_step.x - width;
+            next_step.x -= width;
         }
 
         match &board.field[position.y][position.x] {
