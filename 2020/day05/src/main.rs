@@ -67,7 +67,7 @@ fn part_two(input: &Vec<String>) -> usize {
         let seat = l.parse::<Seat>().unwrap();
         seat_ids.push(seat.seat_id());
     }
-    seat_ids.sort();
+    
     let mut my_seat = 0;
     for id in *seat_ids.iter().min().unwrap()..*seat_ids.iter().max().unwrap() {
         if !seat_ids.contains(&id) {
