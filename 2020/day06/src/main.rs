@@ -26,7 +26,7 @@ fn read_input_part_one(file_name: &str) -> Vec<String> {
 
 #[derive(Debug, Clone)]
 struct Group {
-    // a string representation of all the unique questions that this group answered yes to.
+    // all the unique questions that this group answered yes to.
     questions: HashSet<char>,
 
     // a record of how each individual person responded
