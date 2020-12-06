@@ -44,9 +44,6 @@ fn read_input_part_two(file_name: &str) -> Vec<Group> {
         individual_responses: Vec::new(),
     };
     for line in lines {
-        if !line.is_empty() {
-            group.individual_responses.push(line.clone());
-        }
         if line.is_empty() {
             let combined = questions.join("");
             for c in combined.chars() {
@@ -60,6 +57,7 @@ fn read_input_part_two(file_name: &str) -> Vec<Group> {
             continue;
         }
         questions.push(String::from(line.trim_end()));
+        group.individual_responses.push(line.clone());
     }
     // since the input doesn't end on a newline we'll add the last thing we saw
     let combined = questions.join("");
