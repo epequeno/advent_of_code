@@ -40,12 +40,12 @@ fn read_input(file_name: &str) -> HashMap<String, Vec<String>> {
 
 fn find(target_bag: &str, in_bag: &str, bag_map: HashMap<String, Vec<String>>) -> bool {
     if !bag_map.contains_key(in_bag) {
-        return false;
+        false
     } else {
-        return bag_map[in_bag].contains(&target_bag.to_string())
+        bag_map[in_bag].contains(&target_bag.to_string())
             || bag_map[in_bag]
                 .iter()
-                .any(|b| find(target_bag, b, bag_map.clone()));
+                .any(|b| find(target_bag, b, bag_map.clone()))
     }
 }
 
