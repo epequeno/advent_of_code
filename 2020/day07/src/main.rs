@@ -62,8 +62,66 @@ fn part_one(all_bags: HashMap<String, Vec<String>>) -> usize {
         .sum()
 }
 
+fn parse_contents_part_two(input: &str) -> HashMap<String, usize> {
+    let mut res = HashMap::new();
+    if input.contains("no other bags") {
+        return res;
+    } else {
+        let split: Vec<&str> = input.split(",").collect();
+        split
+            .iter()
+            .map(|content| {
+                let bag: Vec<&str> = content.split_whitespace().collect();
+                let key = bag[1..3].join("_");
+                let value = bag[0].parse::<usize>().unwrap();
+                (key, value)
+            })
+            .for_each(|(k, v)| {
+                res.insert(k, v);
+            });
+    }
+    res
+}
+
+fn read_input_part_two(file_name: &str) -> HashMap<String, HashMap<String, usize>> {
+    let f = File::open(file_name).unwrap();
+    let f = BufReader::new(f);
+    let mut res = HashMap::new();
+    let _ = f.lines().into_iter().for_each(|line| {
+        let line = line.unwrap();
+        let split: Vec<&str> = line.split("contain").collect();
+        let outer = split[0]
+            .trim_end()
+            .replace("bags", "")
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join("_");
+        res.insert(outer, parse_contents_part_two(split[1]));
+    });
+    res
+}
+
+fn count_inner_bags(bag: &str, bag_map: HashMap<String, HashMap<String, usize>>) -> usize {
+    let mut count = 0;
+    if !bag_map.contains_key(bag) {
+        return 0;
+    }
+    for (k, _) in &bag_map[bag] {
+        if bag_map.clone()[&k.clone()].is_empty() {
+            count += bag_map[bag][&k.clone()];
+        } else {
+            count += bag_map[bag][&k.clone()]
+                + (bag_map[bag][&k.clone()] * count_inner_bags(&(k.clone()), bag_map.clone()))
+        }
+    }
+    count
+}
+
 fn main() {
-    let input = read_input("input.txt");
-    let res = part_one(input);
-    println!("{}", res);
+    // let input = read_input("input.txt");
+    // let res = part_one(input);
+
+    let res = read_input_part_two("input.txt");
+    let res = count_inner_bags("shiny_gold", res);
+    println!("part two: {}", res);
 }
